@@ -8,13 +8,13 @@ add_subdirectory("thirdparty")
 
 add_executable(
 	BSPViewer 
-	src/main.cpp src/IO.cpp src/Graphics/Buffers/Buffer.cpp src/Graphics/Buffers/DepthStencilBuffer.cpp
-	src/Graphics/Buffers/FrameBuffer.cpp src/Graphics/Buffers/IndexBuffer.cpp src/Graphics/Buffers/RenderBuffer.cpp
-	src/Graphics/Buffers/VertexBuffer.cpp src/Graphics/Shaders/Shader.cpp src/Graphics/Shaders/ShaderStage.cpp 
-	src/Graphics/Textures/Texture.cpp src/Graphics/Textures/Texture2D.cpp
+	src/main.cpp src/IO.cpp src/Graphics/PerspectiveCamera.cpp src/Graphics/Buffers/Buffer.cpp
+	src/Graphics/Buffers/DepthStencilBuffer.cpp src/Graphics/Buffers/FrameBuffer.cpp src/Graphics/Buffers/IndexBuffer.cpp
+	src/Graphics/Buffers/RenderBuffer.cpp src/Graphics/Buffers/VertexBuffer.cpp src/Graphics/Shaders/Shader.cpp
+	src/Graphics/Shaders/ShaderStage.cpp src/Graphics/Textures/Texture.cpp src/Graphics/Textures/Texture2D.cpp
 )
 target_include_directories(BSPViewer PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_link_libraries(BSPViewer PUBLIC glad glfw ImGUI libbsp)
+target_link_libraries(BSPViewer PUBLIC glad glfw glm ImGUI libbsp)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	target_compile_options(BSPViewer PRIVATE /W4)

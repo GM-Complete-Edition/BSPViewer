@@ -15,6 +15,7 @@
 #include "BSPViewer/ImGuiContext.hpp"
 #include "BSPViewer/Window.hpp"
 #include "BSPViewer/Graphics/OpenGLType.hpp"
+#include "BSPViewer/Graphics/PerspectiveCamera.hpp"
 #include "BSPViewer/Graphics/VertexArray.hpp"
 #include "BSPViewer/Graphics/Buffers/DepthStencilBuffer.hpp"
 #include "BSPViewer/Graphics/Buffers/FrameBuffer.hpp"
@@ -54,10 +55,17 @@ int main() {
 
     ImGui::StyleColorsDark();
 
+    PerspectiveCamera camera = PerspectiveCamera(glm::vec3(0.0f, 0.0f, 3.0f));
+
     Shader shader = Shader(
         VertexShaderStage(readFileToString("vertex_shader.glsl")),
         FragmentShaderStage(readFileToString("fragment_shader.glsl"))
     );
+
+    shader.bind();
+
+    shader.set("uViewMatrix", camera.getViewMatrix());
+    shader.set("uProjectionMatrix", camera.getProjectionMatrix());
 
     FrameBuffer frameBuffer = FrameBuffer(
         std::move(Texture2D(200, 200, TextureFilter::Linear, TextureFilter::Linear, TextureWrap::ClampToEdge, TextureWrap::ClampToEdge)), 
@@ -87,10 +95,6 @@ int main() {
         for (const auto& vertex : modelPart.vertices) {
             if (vertex.vertex) {
                 bsp::Vector3 position = vertex.vertex.value();
-
-                // TODO: Make a proper camera system and use it to move the object, instead of doing... this...
-                position.y -= 1.0;
-                position.z -= 1.0;
 
                 vertices.push_back(position);
             }

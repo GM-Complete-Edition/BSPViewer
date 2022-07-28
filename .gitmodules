@@ -10,3 +10,6 @@
 [submodule "thirdparty/nativefiledialog"]
 	path = thirdparty/nativefiledialog
 	url = https://github.com/GM-Complete-Edition/nativefiledialog
+[submodule "thirdparty/glm"]
+	path = thirdparty/glm
+	url = https://github.com/g-truc/glm

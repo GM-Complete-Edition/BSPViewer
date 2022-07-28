@@ -1,6 +1,7 @@
 #include <stdexcept>
 
 #include <glad/glad.h>
+#include <glm/mat4x4.hpp>
 
 #include "BSPViewer/Graphics/Shaders/Shader.hpp"
 
@@ -30,6 +31,21 @@ Shader::Shader(const VertexShaderStage& vertexShaderStage, const FragmentShaderS
 
 Shader::~Shader() {
 	glDeleteProgram(_shaderId);
+}
+
+template<> 
+void Shader::set(const std::string& name, glm::mat4 value) {
+	if (_uniformLocations.contains(name)) {
+		const int32_t& uniformLocation = _uniformLocations.at(name);
+
+		glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, reinterpret_cast<const float*>(&value));
+	} else {
+		int32_t uniformLocation = glGetUniformLocation(_shaderId, name.c_str());
+
+		_uniformLocations[name] = uniformLocation;
+
+		glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, reinterpret_cast<const float*>(&value));
+	}
 }
 
 void Shader::bind() {
