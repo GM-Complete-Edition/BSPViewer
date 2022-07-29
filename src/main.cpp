@@ -6,9 +6,9 @@
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
-
 #include <libbsp/BSP.hpp>
 #include <libbsp/Decoder.hpp>
+#include <nfd.h>
 
 #include "BSPViewer/GLFW.hpp"
 #include "BSPViewer/IO.hpp"
@@ -76,59 +76,69 @@ int main() {
 
     bsp::BSPDecoder decoder;
 
-    // TODO: The file should be chosen by a user through some file dialog
-    auto stream = bsp::MemoryStream::fromFile("boo.bsp");
-
-    auto bsp = decoder.read<bsp::BSP>(stream);
-
     std::vector<VertexArray> vertexArrays;
-    vertexArrays.reserve(bsp.modelParts.size());
-
-    for (const auto& modelPart : bsp.modelParts) {
-        VertexArray vertexArray;
-        vertexArray.bind();
-
-        std::vector<bsp::Vector3> vertices;
-
-        vertices.reserve(modelPart.vertices.size());
-
-        for (const auto& vertex : modelPart.vertices) {
-            if (vertex.vertex) {
-                bsp::Vector3 position = vertex.vertex.value();
-
-                vertices.push_back(position);
-            }
-        }
-
-        VertexBufferLayout vertexBufferLayout { VertexBufferElement(OpenGLType::Float, 3) };
-        VertexBuffer vertexBuffer(std::move(vertices), vertexBufferLayout);
-
-        std::vector<uint32_t> indices;
-
-        indices.reserve(modelPart.indices.size() * 3);
-
-        for (const auto& index : modelPart.indices) {
-            indices.push_back(index.index0);
-            indices.push_back(index.index1);
-            indices.push_back(index.index2);
-        }
-
-        IndexBuffer indexBuffer(std::move(indices));
-
-        vertexArray.attachVertexBuffer(std::move(vertexBuffer));
-        vertexArray.attachIndexBuffer(std::move(indexBuffer));
-
-        vertexArrays.emplace_back(std::move(vertexArray));
-    }
 
     // TODO: Replace with a custom implementation
     ImGui_ImplGlfw_InitForOpenGL(window.window.get(), true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
+    bool showOpenFileDialog = false;
+
 	while (window.isOpen()) {
 		glfw.pollEvents();
 
-        {
+        if (showOpenFileDialog) {
+            nfdchar_t* filePath;
+
+            NFD_OpenDialog("bsp", nullptr, &filePath);
+
+            auto stream = bsp::MemoryStream::fromFile(filePath);
+            auto bsp = decoder.read<bsp::BSP>(stream);
+
+            vertexArrays.clear();
+            vertexArrays.reserve(bsp.modelParts.size());
+
+            for (const auto& modelPart : bsp.modelParts) {
+                VertexArray vertexArray;
+                vertexArray.bind();
+
+                std::vector<bsp::Vector3> vertices;
+
+                vertices.reserve(modelPart.vertices.size());
+
+                for (const auto& vertex : modelPart.vertices) {
+                    if (vertex.vertex) {
+                        bsp::Vector3 position = vertex.vertex.value();
+
+                        vertices.push_back(position);
+                    }
+                }
+
+                VertexBufferLayout vertexBufferLayout { VertexBufferElement(OpenGLType::Float, 3) };
+                VertexBuffer vertexBuffer(std::move(vertices), vertexBufferLayout);
+
+                std::vector<uint32_t> indices;
+
+                indices.reserve(modelPart.indices.size() * 3);
+
+                for (const auto& index : modelPart.indices) {
+                    indices.push_back(index.index0);
+                    indices.push_back(index.index1);
+                    indices.push_back(index.index2);
+                }
+
+                IndexBuffer indexBuffer(std::move(indices));
+
+                vertexArray.attachVertexBuffer(std::move(vertexBuffer));
+                vertexArray.attachIndexBuffer(std::move(indexBuffer));
+
+                vertexArrays.emplace_back(std::move(vertexArray));
+
+                showOpenFileDialog = false;
+            }
+        }
+
+        if (vertexArrays.size() > 0) { 
             shader.bind();
             frameBuffer.bind();
 
@@ -161,11 +171,11 @@ int main() {
 
         ImGui::NewFrame();
 
-        //application.draw();
-
         {
             if (ImGui::BeginMainMenuBar()) {
                 if (ImGui::BeginMenu("File")) {
+                    ImGui::MenuItem("Open", nullptr, &showOpenFileDialog);
+
                     ImGui::EndMenu();
                 }
 

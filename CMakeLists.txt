@@ -14,7 +14,7 @@ add_executable(
 	src/Graphics/Shaders/ShaderStage.cpp src/Graphics/Textures/Texture.cpp src/Graphics/Textures/Texture2D.cpp
 )
 target_include_directories(BSPViewer PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_link_libraries(BSPViewer PUBLIC glad glfw glm ImGUI libbsp)
+target_link_libraries(BSPViewer PUBLIC glad glfw glm ImGUI libbsp nativefiledialog)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	target_compile_options(BSPViewer PRIVATE /W4)
